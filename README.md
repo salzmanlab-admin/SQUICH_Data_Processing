@@ -23,3 +23,11 @@ Created processed data from SQUICH experiments from the raw fastqs.
 
 
 ## Running the Processing Script
+
+To create the processed output for yourself using the script, clone this repo, cd inside it, and run the `generate_counts.py` script:
+
+```
+git clone https://github.com/salzmanlab/SQUICH_Data_Processing.git
+cd SQUICH_Data_Processing
+python generate_counts.py
+```
