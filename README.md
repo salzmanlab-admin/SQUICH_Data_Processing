@@ -27,7 +27,18 @@ Created processed data from SQUICH experiments from the raw fastqs.
 To create the processed output for yourself using the script, clone this repo, cd inside it, and run the `generate_counts.py` script:
 
 ```
-git clone https://github.com/salzmanlab/SQUICH_Data_Processing.git
-cd SQUICH_Data_Processing
-python generate_counts.py
+$ git clone https://github.com/salzmanlab/SQUICH_Data_Processing.git
+$ cd SQUICH_Data_Processing
+$ python generate_counts.py --one_tube
 ```
+
+This should create the file `20180829_SQUISH14_collapsed_codes_align.csv` (this file is already included in this repository, so running the script should just overwrite that file in this directory with the same contents).
+
+To create `20180829_SQUISH14_collapsed_codes_align_newcodelabel.csv` (which separates out the code counts when all codes are added in the first round), run the following:
+
+```
+$ python generate_counts.py --one_tube
+```
+
+Again, this output file is already included in the repo so running this command should just overwrite it with the same file.
+
