@@ -1,5 +1,5 @@
 # SQUICH Data Processing
-Created processed data from SQUICH experiments from the raw fastqs. This is data from the paper < insert official name of paper with a link to it>.
+Created processed data from SQUICH experiments from the raw fastqs. This is data from the paper < insert official name of paper with a link to it >.
 
 ## Files included
 

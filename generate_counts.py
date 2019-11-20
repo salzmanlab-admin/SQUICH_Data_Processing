@@ -8,7 +8,7 @@
 #
 # Last Modified : Tue 19 Nov 2019 12:03:44 AM PST
 #
-# Created By : Rob Bierman
+# Created By : Rob Bierman, Julia Olivieri, and Darren Liu
 #
 ##############################
 import argparse
@@ -17,11 +17,11 @@ import numpy as np
 import os
 import pandas as pd
 import sq_utils
-#import sys
 import time
 
 
 def get_tc_and_code(r, rev, motif_len, motif, code_seqs, run):
+    """Find target and code within read"""
     left_wind = 0 
     right_wind = len(r) - motif_len
     min_dist = len(motif)
@@ -56,6 +56,7 @@ def get_tc_and_code(r, rev, motif_len, motif, code_seqs, run):
         code_seq_r = code_area[max_ind - 4:max_ind + code_len]
     return tc_seq, code_seq_r, max_ind, tc_ind
 
+
 def degen_hamming(s, degen):
     """Find distance between sequences where the second can be degenerate"""
     if len(s) != len(degen):
@@ -77,7 +78,9 @@ def degen_hamming(s, degen):
             dist += 1
     return dist
 
+
 def count_reads(lib,code_dict,spike_dict,prob_dict, code_seqs, make_align):
+    """Get target and code count for the given library"""
     parse_style = lib["ParseStyle"]
     counts = collections.defaultdict(int)
     r1_path = os.path.join(data_path,run,lib['R1FileName'])
@@ -144,7 +147,7 @@ def count_reads(lib,code_dict,spike_dict,prob_dict, code_seqs, make_align):
     rows = {'TargetCode':[],'Count':[],'Spike':[],'Prob':[],
             'TargetPattern':[],'Code':[],'CodeSeq':[]}
 
-    for key,count in counts.iteritems():
+    for key,count in counts.items():
         tc_seq,code_seq = key.split('_')
         rows['TargetCode'].append(tc_seq)
         rows['Count'].append(count)
@@ -173,6 +176,7 @@ def count_reads(lib,code_dict,spike_dict,prob_dict, code_seqs, make_align):
     
 
 def collapse_counts_by_round(count_df):
+    """Make only one row for each target per library and run"""
     codes = sorted(count_df['Code'].unique())
     rows = []
     groups = count_df.groupby(['RunName','LibName','TargetCode'])
@@ -197,6 +201,7 @@ def collapse_counts_by_round(count_df):
 
 
 def collapse_sub_codes(count_df):
+    """Collapse codes with decimals"""
     count_df.head()
     codes = [c for c in count_df.columns if c[:4] == 'Code']
     code_prefix = []
@@ -215,13 +220,14 @@ def collapse_sub_codes(count_df):
 
 
 def add_target_base_counts(count_df):
+    """Add counts for each base"""
     for base in ['A','T','C','G']:
         count_df[base+'_count'] = count_df['TargetCode'].str.count(base)
     return count_df
 
 
 def get_code_dict(lib, run, one_tube):
-
+    """Get concentrations of each code"""
     code_series = all_codes[all_codes['Name'] == lib['CodingSeries']]
     seq_cols = sorted(n for n in code_series.columns if '_Seq' in n)
     code_dict = collections.defaultdict(lambda:'NoCode')
@@ -249,10 +255,11 @@ def get_code_dict(lib, run, one_tube):
 
 
 def get_spike_dict(lib):
+    """Get concentration of each spike"""
     spikes = all_spikes[all_spikes.Name == lib.SpikeSeries]
     seq_fold = collections.defaultdict(lambda:1)
  
-    degen_mags = {k:len(v) for k,v in sq_utils.degen_seqs().iteritems()}
+    degen_mags = {k:len(v) for k,v in sq_utils.degen_seqs().items()}
     tc_degen = np.prod([degen_mags[b] for b in lib.Motif])
     tc_conc = lib.TargetLibConc
 
@@ -294,9 +301,10 @@ def get_spike_dict(lib):
  
 
 def get_prob_dict(lib):
+    """Get effective probability of each spike"""
     seq_fold = get_spike_dict(lib)
 
-    degen_mags = {k:len(v) for k,v in sq_utils.degen_seqs().iteritems()}
+    degen_mags = {k:len(v) for k,v in sq_utils.degen_seqs().items()}
     tc_degen = np.prod([degen_mags[b] for b in lib.Motif])
     tc_conc = lib.TargetLibConc
 
@@ -305,10 +313,11 @@ def get_prob_dict(lib):
     species_prob = species_base/base
 
     eff_spikes = collections.defaultdict(lambda: species_prob)
-    for seq,spike in seq_fold.iteritems():
+    for seq,spike in seq_fold.items():
         eff_spikes[seq] = (spike*species_base)/(base)
 
     return eff_spikes
+
 
 #######################################################################
 #                                                                     #
@@ -324,8 +333,8 @@ if __name__ == '__main__': # Run to look at (normally just want a list of 1 run)
 
     runs = runs[::-1]
 
-    make_align = True #RB 11/18 changed to True
-    one_tube = args.one_tube #JO 11/19 changed to True
+    make_align = True 
+    one_tube = args.one_tube 
     if make_align:
         make_align_label = "_align"
     else:
@@ -336,8 +345,7 @@ if __name__ == '__main__': # Run to look at (normally just want a list of 1 run)
         one_tube_label = "_newcodelabel"
 
     # Metadata files
-    #data_path = '/share/PI/horence/SQUISH_analysis/runs'
-    data_path = '.' #RB 11/18 modified to point right here for the PLOS
+    data_path = '.' 
     all_libs = pd.read_csv('all_libraries.csv')
     all_codes = pd.read_csv('all_codes.csv')
     all_degs = pd.read_csv('all_degs.csv')
@@ -354,9 +362,7 @@ if __name__ == '__main__': # Run to look at (normally just want a list of 1 run)
 
         for i,lib in libs.iterrows():
 
-#            sys.stdout.write('Working on: '+lib['LibName']+'\n')
             print('Working on: '+lib['LibName']+'\n')
-#            sys.stdout.flush()
             code_dict, code_seqs = get_code_dict(lib, run, one_tube)
             spike_dict = get_spike_dict(lib)
             prob_dict = get_prob_dict(lib)
@@ -367,11 +373,7 @@ if __name__ == '__main__': # Run to look at (normally just want a list of 1 run)
         rounds = sorted(all_counts['Code'].unique())
         all_counts = add_target_base_counts(all_counts)
 
-        # Generate the collapsed counts format
-#        sys.stdout.write('Collapsing counts\n')
         print('Collapsing counts')
-#        sys.stdout.flush()
-
         collapsed = collapse_counts_by_round(all_counts)
         print("\tcollapsed by round")
         collapsed = add_target_base_counts(collapsed)
@@ -383,19 +385,11 @@ if __name__ == '__main__': # Run to look at (normally just want a list of 1 run)
 
         # Generate the collapsed codes format
         collapsed_codes_path = run+'_collapsed_codes.csv'
-#        sys.stdout.write('Collapsing codes\n')
-#        sys.stdout.flush()
         print('Collapsing codes')
 
         collapsed = collapse_sub_codes(collapsed)
         collapsed = add_target_base_counts(collapsed)
-#        if make_align:
-#            collapsed.to_csv(run+'_collapsed_codes_align.csv',index=False)
-#        else:
-#            collapsed.to_csv(run+'_collapsed_codes.csv',index=False)
         collapsed.to_csv('{}_collapsed_codes{}{}.csv'.format(run, make_align_label, one_tube_label),index=False)
-#        sys.stdout.write('Done with '+run+'\n')
-#        sys.stdout.flush()
         print('Done with',run)
     print("time: {}".format(time.time() - t0))
 

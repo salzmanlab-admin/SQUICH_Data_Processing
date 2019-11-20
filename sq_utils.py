@@ -2,7 +2,7 @@
 #############################
 # File Name : squish_utils.py
 #
-# Purpose : [???]
+# Purpose : Functions manipulating sequencing reads
 #
 # Creation Date : 10-05-2018
 #
